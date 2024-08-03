@@ -1,26 +1,11 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
+import { useState, useEffect } from "react";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
-
-// @mui icons
-import FacebookIcon from "@mui/icons-material/Facebook";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import InstagramIcon from "@mui/icons-material/Instagram";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Autocomplete from "@mui/material/Autocomplete";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -52,6 +37,158 @@ import team3 from "assets/images/team-3.jpg";
 import team4 from "assets/images/team-4.jpg";
 
 function Overview() {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    phoneNumber: "",
+    city: "",
+    isActive: "",
+    isNotLocked: "",
+    profileImage: "",
+    role: "",
+    currentUsername: "",
+  });
+  const [cities, setCities] = useState([]);
+  const [cityOptions, setCityOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = sessionStorage.getItem("jwt-Token") || localStorage.getItem("jwt-Token");
+      console.log("Token:", token); // Debug: Check if token is retrieved
+
+      if (token) {
+        try {
+          const response = await fetch("/PI/connected-user", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          console.log("Profile fetch response:", response); // Debug: Check response
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Profile data:", data); // Debug: Check profile data
+            setProfile(data);
+            setFormData({
+              firstName: data.firstName || "",
+              lastName: data.lastName || "",
+              username: data.username || "",
+              email: data.email || "",
+              phoneNumber: data.phoneNumber || "",
+              city: data.city || "",
+              isActive: data.active || "",
+              isNotLocked: data.notLocked || "",
+              profileImage: data.profileImageUrl || "",
+              role: data.role || "",
+              currentUsername: data.username || "",
+            });
+          } else {
+            console.error("Failed to fetch profile");
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+        }
+      } else {
+        console.warn("No token found in localStorage");
+      }
+
+      setLoading(false);
+    };
+
+    const fetchCities = async () => {
+      try {
+        const response = await fetch(
+          "http://api.geonames.org/searchJSON?country=TN&maxRows=500&username=bakloutiwassim"
+        );
+        const data = await response.json();
+        if (data.geonames) {
+          const cities = data.geonames.map((city) => city.name);
+          setCities(cities);
+        } else {
+          console.error("No cities found");
+        }
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+      }
+    };
+
+    fetchProfile();
+    fetchCities();
+  }, []);
+
+  const handleEdit = () => {
+    setEditMode(true);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleCityChange = (event, newValue) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      city: newValue || "",
+    }));
+  };
+
+  const toQueryString = (data) => {
+    return Object.keys(data)
+      .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+      .join("&");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = sessionStorage.getItem("jwt-Token") || localStorage.getItem("jwt-Token");
+
+    if (token) {
+      try {
+        const queryString = toQueryString(formData);
+
+        const response = await fetch(`/PI/update?${queryString}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Update success:", data); // Debug: Check update response
+          setProfile(data);
+          setEditMode(false); // Exit edit mode after successful update
+        } else {
+          console.error("Failed to update profile");
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+      }
+    } else {
+      console.warn("No token found in localStorage");
+    }
+  };
+
+  if (loading) {
+    return <MDTypography variant="h6">Loading...</MDTypography>;
+  }
+
+  if (!profile) {
+    return <MDTypography variant="h6">No profile data available</MDTypography>;
+  }
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -64,39 +201,91 @@ function Overview() {
             </Grid>
             <Grid item xs={12} md={6} xl={4} sx={{ display: "flex" }}>
               <Divider orientation="vertical" sx={{ ml: -2, mr: 1 }} />
-              <ProfileInfoCard
-                title="profile information"
-                description="Hi, I’m Alec Thompson, Decisions: If you can’t decide, the answer is no. If two equally difficult paths, choose the one more painful in the short term (pain avoidance is creating an illusion of equality)."
-                info={{
-                  fullName: "Alec M. Thompson",
-                  mobile: "(44) 123 1234 123",
-                  email: "alecthompson@mail.com",
-                  location: "USA",
-                }}
-                social={[
-                  {
-                    link: "https://www.facebook.com/CreativeTim/",
-                    icon: <FacebookIcon />,
-                    color: "facebook",
-                  },
-                  {
-                    link: "https://twitter.com/creativetim",
-                    icon: <TwitterIcon />,
-                    color: "twitter",
-                  },
-                  {
-                    link: "https://www.instagram.com/creativetimofficial/",
-                    icon: <InstagramIcon />,
-                    color: "instagram",
-                  },
-                ]}
-                action={{ route: "", tooltip: "Edit Profile" }}
-                shadow={false}
-              />
+              {!editMode ? (
+                <ProfileInfoCard
+                  title="Profile Information"
+                  description={`UID : ${profile.userId}` || "No UID"}
+                  info={{
+                    FirstName: profile.firstName || "No FirstName",
+                    LastName: profile.lastName || "No LastName",
+                    UserName: profile.username || "No UserName",
+                    email: profile.email || "No Email",
+                    PhoneNumber: profile.phoneNumber || "No Phone Number",
+                    City: profile.city || "No City",
+                  }}
+                  // social={profile.socialLinks || []}
+                  action={{ route: "", tooltip: "Edit Profile", onClick: handleEdit }}
+                  shadow={false}
+                />
+              ) : (
+                <MDBox component="form" onSubmit={handleSubmit}>
+                  <TextField
+                    label="First Name"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
+                    label="Last Name"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
+                    label="User Name"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
+                    label="Email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
+                    label="Phone Number"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <Autocomplete
+                    options={cities}
+                    value={formData.city}
+                    onChange={handleCityChange}
+                    renderInput={(params) => (
+                      <TextField {...params} label="City" margin="normal" fullWidth />
+                    )}
+                  />
+                  <MDBox mt={2} display="flex" justifyContent="space-between">
+                    <Button type="submit" variant="gradient" color="info">
+                      Save Changes
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="gradient"
+                      color="error"
+                      onClick={() => setEditMode(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </MDBox>
+                </MDBox>
+              )}
               <Divider orientation="vertical" sx={{ mx: 0 }} />
             </Grid>
             <Grid item xs={12} xl={4}>
-              <ProfilesList title="conversations" profiles={profilesListData} shadow={false} />
+              <ProfilesList title="Conversations" profiles={profilesListData} shadow={false} />
             </Grid>
           </Grid>
         </MDBox>

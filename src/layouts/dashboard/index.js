@@ -49,7 +49,7 @@ function Dashboard() {
                 color="dark"
                 icon="weekend"
                 title="Bookings"
-                count={288}
+                count={281}
                 percentage={{
                   color: "success",
                   amount: "+55%",

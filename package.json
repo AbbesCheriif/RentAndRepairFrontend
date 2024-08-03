@@ -2,6 +2,7 @@
   "name": "material-dashboard-2-react",
   "version": "2.2.0",
   "private": true,
+  "proxy": "http://localhost:8089",
   "author": "Creative Tim",
   "license": "See license in https://www.creative-tim.com/license",
   "description": "React version of Material Dashboard 2 by Creative Tim",
@@ -18,10 +19,10 @@
     "@emotion/styled": "11.10.8",
     "@mui/icons-material": "5.11.16",
     "@mui/material": "5.12.3",
-    "ajv": "^8.17.1",
+    "ajv": "^3.8.10",
+    "ajv-keywords": "^1.5.1",
     "chart.js": "4.3.0",
     "chroma-js": "2.4.2",
-    "cross-env": "^7.0.3",
     "prop-types": "15.8.1",
     "react": "18.2.0",
     "react-chartjs-2": "5.2.0",
@@ -35,8 +36,8 @@
     "yup": "1.1.1"
   },
   "scripts": {
-    "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start"
@@ -60,6 +61,7 @@
     ]
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "eslint": "8.39.0",
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-import": "2.27.5",

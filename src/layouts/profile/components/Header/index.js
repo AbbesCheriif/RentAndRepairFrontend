@@ -41,6 +41,45 @@ import backgroundImage from "assets/images/bg-profile.jpeg";
 function Header({ children }) {
   const [tabsOrientation, setTabsOrientation] = useState("horizontal");
   const [tabValue, setTabValue] = useState(0);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = sessionStorage.getItem("jwt-Token") || localStorage.getItem("jwt-Token");
+      console.log("Token:", token); // Debug: Check if token is retrieved
+
+      if (token) {
+        try {
+          const response = await fetch("/PI/connected-user", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          console.log("Profile fetch response:", response); // Debug: Check response
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Profile data:", data); // Debug: Check profile data
+            setProfile(data);
+          } else {
+            console.error("Failed to fetch profile");
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+        }
+      } else {
+        console.warn("No token found in localStorage");
+      }
+
+      setLoading(false);
+    };
+
+    fetchProfile();
+  }, []);
 
   useEffect(() => {
     // A function that sets the orientation state of the tabs.
@@ -63,6 +102,10 @@ function Header({ children }) {
   }, [tabsOrientation]);
 
   const handleSetTabValue = (event, newValue) => setTabValue(newValue);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <MDBox position="relative" mb={5}>
@@ -94,16 +137,25 @@ function Header({ children }) {
       >
         <Grid container spacing={3} alignItems="center">
           <Grid item>
-            <MDAvatar src={burceMars} alt="profile-image" size="xl" shadow="sm" />
+            <MDAvatar
+              src={`/PI/image/profile/${profile.username}`}
+              alt="profile-image"
+              size="xxl"
+              shadow="sm"
+            />
           </Grid>
           <Grid item>
             <MDBox height="100%" mt={0.5} lineHeight={1}>
-              <MDTypography variant="h5" fontWeight="medium">
-                Richard Davis
-              </MDTypography>
-              <MDTypography variant="button" color="text" fontWeight="regular">
-                CEO / Co-Founder
-              </MDTypography>
+              {profile && (
+                <>
+                  <MDTypography variant="h5" fontWeight="medium">
+                    {`${profile.firstName} ${profile.lastName}`}
+                  </MDTypography>
+                  <MDTypography variant="button" color="text" fontWeight="regular">
+                    {profile.email}
+                  </MDTypography>
+                </>
+              )}
             </MDBox>
           </Grid>
           <Grid item xs={12} md={6} lg={4} sx={{ ml: "auto" }}>
