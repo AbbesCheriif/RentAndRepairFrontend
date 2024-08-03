@@ -103,7 +103,7 @@ function Tables() {
         const data = await response.json();
         //setRows((prevRows) => [...prevRows, data]);
         handleClose();
-        window.location.reload();
+        //window.location.reload();
       } else {
         console.error("Failed to add new user");
       }
@@ -185,15 +185,6 @@ function Tables() {
             type="text"
             fullWidth
             value={newUser.username}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            name="email"
-            label="Email"
-            type="email"
-            fullWidth
-            value={newUser.email}
             onChange={handleChange}
           />
           <TextField
