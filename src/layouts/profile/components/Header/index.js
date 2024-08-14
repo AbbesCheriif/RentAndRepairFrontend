@@ -1,19 +1,5 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Updated import
 
 // prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
@@ -43,6 +29,8 @@ function Header({ children }) {
   const [tabValue, setTabValue] = useState(0);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -102,6 +90,12 @@ function Header({ children }) {
   }, [tabsOrientation]);
 
   const handleSetTabValue = (event, newValue) => setTabValue(newValue);
+
+  const handleLogout = () => {
+    localStorage.removeItem("jwt-Token");
+    sessionStorage.removeItem("jwt-Token");
+    navigate("/authentication/sign-in"); // Redirect to login page
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -182,6 +176,15 @@ function Header({ children }) {
                   icon={
                     <Icon fontSize="small" sx={{ mt: -0.25 }}>
                       settings
+                    </Icon>
+                  }
+                />
+                <Tab
+                  label="Log Out"
+                  onClick={handleLogout} // Add onClick handler
+                  icon={
+                    <Icon fontSize="small" sx={{ mt: -0.25 }}>
+                      logout
                     </Icon>
                   }
                 />

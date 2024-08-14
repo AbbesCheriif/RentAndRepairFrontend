@@ -22,6 +22,7 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDAvatar from "components/MDAvatar";
 import MDBadge from "components/MDBadge";
+import MDButton from "components/MDButton";
 
 // Fetch function to get user data
 const fetchUserData = async () => {
@@ -37,6 +38,24 @@ const fetchUserData = async () => {
   } catch (error) {
     console.error("Error:", error);
     return [];
+  }
+};
+
+// Delete function to remove a user
+const deleteUserData = async (username) => {
+  try {
+    const response = await fetch(`/PI/delete/${username}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      return true;
+    } else {
+      console.error("Failed to delete user");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return false;
   }
 };
 
@@ -56,6 +75,13 @@ export default function data() {
     if (!dateString) return "----";
     const date = new Date(dateString);
     return date.toLocaleDateString();
+  };
+
+  const handleDelete = async (username) => {
+    const isDeleted = await deleteUserData(username);
+    if (isDeleted) {
+      setUsers((prevUsers) => prevUsers.filter((user) => user.username !== username));
+    }
   };
 
   const Author = ({ image, name, email }) => (
@@ -123,9 +149,26 @@ export default function data() {
       </MDTypography>
     ),
     action: (
-      <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-        Edit
-      </MDTypography>
+      <MDBox display="flex" alignItems="center">
+        <MDTypography
+          component="a"
+          href="#"
+          variant="caption"
+          color="text"
+          fontWeight="medium"
+          style={{ marginRight: 8 }}
+        >
+          Edit
+        </MDTypography>
+        <MDButton
+          variant="text"
+          color="error"
+          size="small"
+          onClick={() => handleDelete(user.username)}
+        >
+          Delete
+        </MDButton>
+      </MDBox>
     ),
   }));
 

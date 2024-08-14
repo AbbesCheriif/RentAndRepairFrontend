@@ -8,10 +8,12 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import MDSnackbar from "components/MDSnackbar";
 
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -57,6 +59,11 @@ function Tables() {
     city: "",
     profileImage: null,
   });
+  const [loading, setLoading] = useState(false); // Add loading state
+  const [successSB, setSuccessSB] = useState(false); // Add state for success snackbar
+
+  const openSuccessSB = () => setSuccessSB(true);
+  const closeSuccessSB = () => setSuccessSB(false);
 
   useEffect(() => {
     const getCities = async () => {
@@ -88,6 +95,7 @@ function Tables() {
   };
 
   const handleSubmit = async () => {
+    setLoading(true); // Set loading to true when form submission starts
     const formData = new FormData();
     Object.keys(newUser).forEach((key) => {
       formData.append(key, newUser[key]);
@@ -102,15 +110,39 @@ function Tables() {
       if (response.ok) {
         const data = await response.json();
         //setRows((prevRows) => [...prevRows, data]);
+        openSuccessSB(); // Show success notification
         handleClose();
-        //window.location.reload();
+        window.location.reload();
       } else {
         console.error("Failed to add new user");
       }
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setLoading(false); // Set loading to false when form submission is complete
     }
   };
+
+  const roleOptions = [
+    { label: "Admin", value: "ROLE_ADMIN" },
+    { label: "User", value: "ROLE_USER" },
+    { label: "Handyman", value: "ROLE_HANDYMAN" },
+    { label: "Property Owner", value: "ROLE_PROPRETYOWNER" },
+  ];
+
+  const renderSuccessSB = (
+    <MDSnackbar
+      color="success"
+      icon="check"
+      title="Material Dashboard"
+      content="User added successfully!"
+      dateTime="Now"
+      open={successSB}
+      onClose={closeSuccessSB}
+      close={closeSuccessSB}
+      bgWhite
+    />
+  );
 
   return (
     <DashboardLayout>
@@ -159,77 +191,105 @@ function Tables() {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add New User</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            name="firstName"
-            label="First Name"
-            type="text"
-            fullWidth
-            value={newUser.firstName}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            name="lastName"
-            label="Last Name"
-            type="text"
-            fullWidth
-            value={newUser.lastName}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            name="username"
-            label="Username"
-            type="text"
-            fullWidth
-            value={newUser.username}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            name="role"
-            label="Role"
-            type="text"
-            fullWidth
-            value={newUser.role}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
-            name="phoneNumber"
-            label="Phone Number"
-            type="text"
-            fullWidth
-            value={newUser.phoneNumber}
-            onChange={handleChange}
-          />
-          <Autocomplete
-            freeSolo
-            options={cities}
-            value={newUser.city}
-            onChange={handleCityChange}
-            renderInput={(params) => (
-              <TextField {...params} label="City" margin="dense" fullWidth />
-            )}
-          />
-          <input
-            type="file"
-            name="profileImage"
-            onChange={handleImageChange}
-            style={{ marginTop: 20 }}
-          />
+          {loading ? ( // Conditionally render loading indicator
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "200px",
+              }}
+            >
+              <CircularProgress />
+            </div>
+          ) : (
+            <>
+              <TextField
+                autoFocus
+                margin="dense"
+                name="firstName"
+                label="First Name"
+                type="text"
+                fullWidth
+                value={newUser.firstName}
+                onChange={handleChange}
+              />
+              <TextField
+                margin="dense"
+                name="lastName"
+                label="Last Name"
+                type="text"
+                fullWidth
+                value={newUser.lastName}
+                onChange={handleChange}
+              />
+              <TextField
+                margin="dense"
+                name="username"
+                label="Username"
+                type="text"
+                fullWidth
+                value={newUser.username}
+                onChange={handleChange}
+              />
+              <TextField
+                margin="dense"
+                name="email"
+                label="Email"
+                type="email"
+                fullWidth
+                value={newUser.email}
+                onChange={handleChange}
+              />
+              <Autocomplete
+                options={roleOptions}
+                getOptionLabel={(option) => option.label}
+                value={roleOptions.find((option) => option.value === newUser.role) || null}
+                onChange={(event, newValue) => {
+                  handleChange({ target: { name: "role", value: newValue?.value || "" } });
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Role" margin="dense" fullWidth />
+                )}
+              />
+              <TextField
+                margin="dense"
+                name="phoneNumber"
+                label="Phone Number"
+                type="text"
+                fullWidth
+                value={newUser.phoneNumber}
+                onChange={handleChange}
+              />
+              <Autocomplete
+                freeSolo
+                options={cities}
+                value={newUser.city}
+                onChange={handleCityChange}
+                renderInput={(params) => (
+                  <TextField {...params} label="City" margin="dense" fullWidth />
+                )}
+              />
+              <input
+                type="file"
+                name="profileImage"
+                onChange={handleImageChange}
+                style={{ marginTop: 20 }}
+              />
+            </>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="primary" disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="primary">
+          <Button onClick={handleSubmit} color="primary" disabled={loading}>
             Add
           </Button>
         </DialogActions>
       </Dialog>
+
+      {renderSuccessSB}
     </DashboardLayout>
   );
 }

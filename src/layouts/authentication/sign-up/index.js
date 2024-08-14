@@ -23,6 +23,8 @@ function Cover() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [city, setCity] = useState("");
   const [cities, setCities] = useState([]);
+  const [expertise, setExpertise] = useState("");
+  const [formType, setFormType] = useState("user");
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -47,6 +49,14 @@ function Cover() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    let role;
+    if (formType === "user") {
+      role = "ROLE_USER";
+    } else if (formType === "propertyOwner") {
+      role = "ROLE_PROPRETYOWNER";
+    } else if (formType === "handyman") {
+      role = "ROLE_HANDYMAN";
+    }
     const data = {
       firstName,
       lastName,
@@ -54,6 +64,8 @@ function Cover() {
       email,
       phoneNumber,
       city,
+      role, // Include the role in the request body
+      expertise: formType === "handyman" ? expertise : undefined,
     };
 
     try {

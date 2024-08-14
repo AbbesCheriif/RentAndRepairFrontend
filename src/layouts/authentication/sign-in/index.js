@@ -39,10 +39,12 @@ function Basic() {
         const result = await response.json();
         const token = response.headers.get("jwt-Token");
         if (rememberMe) {
+          sessionStorage.clear();
           localStorage.clear();
           localStorage.setItem("jwt-Token", token);
           console.log(token);
         } else {
+          localStorage.clear();
           sessionStorage.clear();
           sessionStorage.setItem("jwt-Token", token);
           console.log(token);
